@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Language Flashcards</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    .flashcard {
+      background: #e0e0e0;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 AI Language Flashcards</h1>
+    <div>
+      <input type="text" id="wordInput" placeholder="Word (e.g., Apfel)">
+      <input type="text" id="translationInput" placeholder="Translation (e.g., Apple)">
+      <textarea id="exampleInput" placeholder="Example sentence (optional)"></textarea>
+      <div class="buttons">
+        <button onclick="addFlashcard()">Add</button>
+        <button onclick="generateExample()">Generate Example</button>
+      </div>
+    </div>
+    <hr>
+    <div id="flashcards"></div>
+  </div>
+
+  <script>
+    const flashcards = JSON.parse(localStorage.getItem("flashcards")) || [];
+
+    function saveFlashcards() {
+      localStorage.setItem("flashcards", JSON.stringify(flashcards));
+    }
+
+    function renderFlashcards() {
+      const container = document.getElementById("flashcards");
+      container.innerHTML = "";
+      flashcards.forEach((card, index) => {
+        const div = document.createElement("div");
+        div.className = "flashcard";
+        div.innerHTML = `
+          <strong>${card.word}</strong> - ${card.translation}<br>
+          <em>${card.example}</em><br>
+          <div class="buttons">
+            <button onclick="speak('${card.word}')">🔊 Speak</button>
+            <button onclick="deleteCard(${index})">🗑️ Delete</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addFlashcard() {
+      const word = document.getElementById("wordInput").value;
+      const translation = document.getElementById("translationInput").value;
+      const example = document.getElementById("exampleInput").value || "No example yet.";
+      if (!word || !translation) return alert("Please fill in word and translation.");
+
+      flashcards.push({ word, translation, example });
+      saveFlashcards();
+      renderFlashcards();
+      document.getElementById("wordInput").value = "";
+      document.getElementById("translationInput").value = "";
+      document.getElementById("exampleInput").value = "";
+    }
+
+    function deleteCard(index) {
+      flashcards.splice(index, 1);
+      saveFlashcards();
+      renderFlashcards();
+    }
+
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(msg);
+    }
+
+    function generateExample() {
+      const word = document.getElementById("wordInput").value;
+      const translation = document.getElementById("translationInput").value;
+      if (!word || !translation) return alert("Please fill word and translation first.");
+
+      // Simple mocked AI generation logic
+      const example = `Ich esse gerne einen ${word}. (I like eating an ${translation})`;
+      document.getElementById("exampleInput").value = example;
+    }
+
+    renderFlashcards();
+  </script>
+</body>
+</html>
