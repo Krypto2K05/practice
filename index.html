@@ -5,25 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Language Flashcards</title>
   <style>
+    :root {
+      --bg-color: #f2f2f2;
+      --text-color: #333;
+      --card-bg: #e0e0e0;
+      --card-shadow: rgba(0,0,0,0.1);
+      --btn-bg: #4CAF50;
+      --btn-hover: #45a049;
+    }
+
+    .dark-mode {
+      --bg-color: #1e1e1e;
+      --text-color: #f2f2f2;
+      --card-bg: #2e2e2e;
+      --card-shadow: rgba(255,255,255,0.1);
+      --btn-bg: #2196F3;
+      --btn-hover: #1976D2;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      background: var(--bg-color);
+      color: var(--text-color);
       padding: 20px;
-      color: #333;
+      transition: background 0.3s, color 0.3s;
     }
     .container {
       max-width: 600px;
       margin: auto;
       background: #fff;
+      background: var(--card-bg);
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px var(--card-shadow);
     }
     h1 {
       text-align: center;
     }
     .flashcard {
-      background: #e0e0e0;
+      background: var(--card-bg);
       padding: 15px;
       border-radius: 10px;
       margin-bottom: 10px;
@@ -33,17 +53,18 @@
       gap: 10px;
       justify-content: center;
       margin-top: 10px;
+      flex-wrap: wrap;
     }
     button {
       padding: 8px 16px;
       border: none;
       border-radius: 6px;
-      background: #4CAF50;
+      background: var(--btn-bg);
       color: white;
       cursor: pointer;
     }
     button:hover {
-      background: #45a049;
+      background: var(--btn-hover);
     }
     input, textarea {
       width: 100%;
@@ -51,12 +72,18 @@
       margin: 5px 0;
       border-radius: 6px;
       border: 1px solid #ccc;
+      background: white;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🧠 AI Language Flashcards</h1>
+    <div class="buttons">
+      <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
+      <button onclick="exportData()">⬇️ Export</button>
+      <input type="file" onchange="importData(event)" accept="application/json">
+    </div>
     <div>
       <input type="text" id="wordInput" placeholder="Word (e.g., Apfel)">
       <input type="text" id="translationInput" placeholder="Translation (e.g., Apple)">
@@ -128,6 +155,41 @@
       // Simple mocked AI generation logic
       const example = `Ich esse gerne einen ${word}. (I like eating an ${translation})`;
       document.getElementById("exampleInput").value = example;
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    function exportData() {
+      const dataStr = JSON.stringify(flashcards, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "flashcards.json";
+      a.click();
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported)) {
+            flashcards.splice(0, flashcards.length, ...imported);
+            saveFlashcards();
+            renderFlashcards();
+          } else {
+            alert("Invalid file format.");
+          }
+        } catch (err) {
+          alert("Failed to import flashcards.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     renderFlashcards();
